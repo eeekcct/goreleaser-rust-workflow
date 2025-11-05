@@ -1,0 +1,1 @@
+# goreleaser-rust-workflow
