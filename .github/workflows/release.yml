@@ -2,6 +2,15 @@
 name: goreleaser rust
 on:
   workflow_call:
+    inputs:
+      draft:
+        required: false
+        type: boolean
+        default: true
+      release:
+        required: false
+        type: boolean
+        default: true
 
 permissions: {}
 
@@ -63,10 +72,25 @@ jobs:
     uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.1.0
     with:
       base64-subjects: ${{ needs.goreleaser.outputs.hashes }}
-      upload-assets: true # upload to a new release
+      upload-assets: true
+      draft-release: ${{ inputs.draft }}
+
+  publish-release:
+    if: ${{ inputs.draft && inputs.release }}
+    needs: [binary-provenance]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Publish release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          gh -R "$GITHUB_REPOSITORY" release edit "$GITHUB_REF_NAME" --draft=false
 
   binary-verify:
-    needs: [goreleaser, binary-provenance]
+    if: ${{ (!inputs.draft || inputs.release) && ! failure() }}
+    needs: [goreleaser, binary-provenance, publish-release]
     runs-on: ubuntu-latest
     env:
       CHECKSUMS: ${{ needs.goreleaser.outputs.hashes }}
