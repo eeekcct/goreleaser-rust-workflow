@@ -23,6 +23,14 @@ on:
         required: false
         type: string
         default: yaml
+      license_check:
+        required: false
+        type: boolean
+        default: false
+      deny_toml_path:
+        required: false
+        type: string
+        default: deny.toml
 
 permissions: {}
 
@@ -70,6 +78,20 @@ jobs:
           output="$THIRD_PARTY_LICENSES_DIR/THIRD_PARTY_LICENSES.$THIRD_PARTY_LICENSES_FORMAT"
           cargo bundle-licenses --format "$THIRD_PARTY_LICENSES_FORMAT" --output "$output"
           test -s "$output"
+      - name: Run cargo-deny license check
+        if: ${{ inputs.license_check }}
+        env:
+          DENY_TOML_PATH: ${{ inputs.deny_toml_path }}
+        run: |
+          set -euo pipefail
+
+          if [ ! -f "$DENY_TOML_PATH" ]; then
+            echo "::error::deny.toml is required when license_check is enabled: $DENY_TOML_PATH"
+            exit 1
+          fi
+
+          cargo install cargo-deny --locked
+          cargo deny --manifest-path Cargo.toml --config "$DENY_TOML_PATH" check licenses
       - name: Run goreleaser
         uses: goreleaser/goreleaser-action@e435ccd777264be153ace6237001ef4d979d3a7a # v6.4.0
         id: goreleaser
