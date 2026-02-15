@@ -16,6 +16,7 @@ jobs:
     with:
       third_party_licenses: true
       license_check: true
+      goreleaser_timeout_minutes: 60
       # optional
       # third_party_licenses_dir: third_party_licenses
       # third_party_licenses_format: yaml
@@ -63,6 +64,7 @@ archives:
 ```
 
 `third_party_licenses_format` supports `yaml`, `json`, and `toml`.
+`goreleaser_timeout_minutes` defaults to `60`.
 
 ## Licence
 
