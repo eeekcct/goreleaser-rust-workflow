@@ -69,7 +69,7 @@ jobs:
           fi
 
           cargo install cargo-deny --locked
-          cargo deny --manifest-path Cargo.toml --config "$DENY_TOML_PATH" check licenses
+          cargo deny --manifest-path Cargo.toml check --config "$DENY_TOML_PATH" licenses
       - name: Generate third-party licenses
         if: ${{ inputs.third_party_licenses }}
         env:
