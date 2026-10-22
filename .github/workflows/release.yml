@@ -58,8 +58,10 @@ jobs:
         uses: sigstore/cosign-installer@faadad0cce49287aee09b3a48701e75088a2c6ad # v4.0.0
       - name: Install syft
         uses: anchore/sbom-action/download-syft@28d71544de8eaf1b958d335707167c5f783590ad # v0.22.2
-      - name: Install Mingw-w64
-        run: brew install mingw-w64
+      - name: Install Windows cross-build tools
+        run: |
+          brew install mingw-w64 nasm
+          nasm -v
       - name: Run cargo-deny license check
         if: ${{ inputs.license_check }}
         env:
@@ -73,7 +75,7 @@ jobs:
           fi
 
           cargo install cargo-deny --locked
-          cargo deny --manifest-path Cargo.toml check --config "$DENY_TOML_PATH" licenses
+          cargo deny --manifest-path Cargo.toml --config "$DENY_TOML_PATH" check licenses
       - name: Generate third-party licenses
         if: ${{ inputs.third_party_licenses }}
         env:
