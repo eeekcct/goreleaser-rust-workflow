@@ -8,9 +8,21 @@
       pinDigests: true,
     },
     {
-      matchDepTypes: ["action"],
+      // SLSA requires a version tag for reusable workflows as well as actions.
+      matchManagers: ["github-actions"],
       matchPackageNames: ["slsa-framework/slsa-github-generator"],
       pinDigests: false,
+    },
+  ],
+  customManagers: [
+    {
+      // The built-in GitHub Actions manager does not extract syft-version.
+      customType: "regex",
+      managerFilePatterns: ["/^\\.github\\/workflows\\/release\\.yml$/"],
+      matchStrings: ["syft-version: (?<currentValue>v[0-9]+\\.[0-9]+\\.[0-9]+)"],
+      depNameTemplate: "anchore/syft",
+      datasourceTemplate: "github-releases",
+      versioningTemplate: "semver",
     },
   ],
   lockFileMaintenance: {
